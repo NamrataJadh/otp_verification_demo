@@ -48,8 +48,11 @@ export default function Index() {
 
   // ✅ Handle Backspace
   const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === "Backspace" && !otpDigits[index] && index > 0) {
-      inputRef.current[index - 1]?.focus();
+    if (e.nativeEvent.key === "Backspace" && otpDigits[index] === "") {
+      // Move to previous input when backspace on empty field
+      if (index > 0) {
+        inputRef.current[index - 1]?.focus();
+      }
     }
   };
 
@@ -58,15 +61,15 @@ export default function Index() {
     const otpCode = otpDigits.join("");
 
     if (otpCode.length === OTP_LENGTH) {
-      console.log("✅ OTP Verification Success:", otpCode);
+      console.log("Entered OTP:", otpCode);
     } else {
-      console.log("❌ OTP incomplete");
+      console.log("OTP incomplete");
     }
   };
 
   // ✅ Resend OTP
   const onResendOtp = () => {
-    console.log("Resend OTP pressed");
+    console.log("Resend code triggered");
   };
 
   return (
@@ -89,6 +92,7 @@ export default function Index() {
                 maxLength={1}
                 value={digit}
                 onChangeText={(text) => handleOtpChange(text, index)}
+                onKeyPress={(e) => handleKeyPress(e, index)}
               />
             ))}
           </View>
@@ -97,11 +101,13 @@ export default function Index() {
             <Text style={styles.verifyText}>Verify</Text>
           </TouchableOpacity>
 
-          <Text style={styles.footerText}>
-            Didn’t receive the code? <TouchableOpacity onPress={onResendOtp}>
-              <Text style={styles.resend}>Resend OTP</Text>
+          <View style={styles.footerContainer}>
+            <Text style={styles.footerText}>Didn’t receive the code? </Text>
+            <TouchableOpacity onPress={onResendOtp}>
+              <Text style={styles.resend}>Resend</Text>
             </TouchableOpacity>
-          </Text>
+          </View>
+
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -119,7 +125,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: scale(40), justifyContent: "center" },
   title: { fontSize: scale(35), fontFamily: "fontBold", marginBottom: verticalScale(15) },
   subtitle: { fontSize: scale(18), fontFamily: "fontReg", marginBottom: verticalScale(15) },
-  email: { fontSize: scale(18), fontFamily: "fontBold", marginBottom: verticalScale(18) },
+  email: { fontSize: scale(18), fontFamily: "fontBold", marginBottom: verticalScale(30) },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: verticalScale(30) },
   otpInput: {
     width: scale(60),
@@ -142,6 +148,12 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(20),
   },
   verifyText: { color: "#fff", fontSize: scale(20), fontFamily: "fontBold" },
+  footerContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
   footerText: { fontSize: scale(18), fontFamily: "fontReg" },
-  resend: { fontFamily: "fontBold" },
+  resend: { fontSize: scale(18), fontFamily: "fontBold" },
 })
