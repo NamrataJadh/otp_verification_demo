@@ -9,7 +9,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Welcome to Otp Verification Demo</Text>
+      <Text>Welcome to Otp Verification Demo!!</Text>
     </View>
   );
 }
