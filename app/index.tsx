@@ -25,7 +25,7 @@ export default function Index() {
   });
 
   const [otpDigits, setOtpDigits] = useState(Array(OTP_LENGTH).fill(""));
-  // const inputRef = useRef<(TextInput | null)[]>([]);
+  const [isResendDisabled, setIsResendDisabled] = useState(false);
   const inputRef = useRef<Array<TextInput | null>>([]);
 
   // ✅ Handle typing digits
@@ -58,6 +58,7 @@ export default function Index() {
 
   // ✅ Submit OTP
   const onVerifyOtp = () => {
+    setIsResendDisabled(true);
     const otpCode = otpDigits.join("");
 
     if (otpCode.length === OTP_LENGTH) {
@@ -97,14 +98,26 @@ export default function Index() {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.verifyBtn} onPress={onVerifyOtp}>
+          <TouchableOpacity
+            style={[
+              styles.verifyBtn,
+              otpDigits.join("").length < OTP_LENGTH && styles.verifyBtnDisabled,
+            ]}
+            onPress={onVerifyOtp}
+            disabled={otpDigits.join("").length < OTP_LENGTH}>
             <Text style={styles.verifyText}>Verify</Text>
           </TouchableOpacity>
 
           <View style={styles.footerContainer}>
             <Text style={styles.footerText}>Didn’t receive the code? </Text>
-            <TouchableOpacity onPress={onResendOtp}>
-              <Text style={styles.resend}>Resend</Text>
+            <TouchableOpacity onPress={onResendOtp} disabled={isResendDisabled}>
+              <Text
+                style={[
+                  styles.resend,
+                  isResendDisabled && { color: "#6b6e6d" },
+                ]}>
+                Resend
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -141,11 +154,14 @@ const styles = StyleSheet.create({
   },
   verifyBtn: {
     height: verticalScale(45),
-    backgroundColor: "#6b6e6d",
+    backgroundColor: "#6a6e6b",
     borderRadius: scale(14),
     alignItems: "center",
     justifyContent: "center",
     marginBottom: verticalScale(20),
+  },
+  verifyBtnDisabled: {
+    backgroundColor: "#a0a0a0",
   },
   verifyText: { color: "#fff", fontSize: scale(20), fontFamily: "fontBold" },
   footerContainer: {
