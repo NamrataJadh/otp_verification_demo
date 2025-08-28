@@ -3,11 +3,15 @@ import {
 } from "@expo-google-fonts/poppins";
 import React, { useRef, useState } from "react";
 import {
-  Keyboard, KeyboardAvoidingView,
+  Keyboard,
+  KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Text, TextInput, TouchableOpacity,
-  TouchableWithoutFeedback, View
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import { scale, verticalScale } from 'react-native-size-matters';
 
@@ -20,17 +24,55 @@ export default function Index() {
     fontReg,
   });
 
-  const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(""));
-  const inputsRef = useRef<(TextInput | null)[]>([]);
+  const [otpDigits, setOtpDigits] = useState(Array(OTP_LENGTH).fill(""));
+  // const inputRef = useRef<(TextInput | null)[]>([]);
+  const inputRef = useRef<Array<TextInput | null>>([]);
+
+  // ✅ Handle typing digits
+  const handleOtpChange = (text: string, index: number) => {
+    const updatedDigits = [...otpDigits];
+    updatedDigits[index] = text;
+
+    setOtpDigits(updatedDigits);
+
+    // Move to next input if a digit is typed
+    if (text && index < OTP_LENGTH - 1) {
+      inputRef.current[index + 1]?.focus();
+    }
+
+    // Move to previous input if empty
+    if (!text && index > 0) {
+      inputRef.current[index - 1]?.focus();
+    }
+  };
+
+  // ✅ Handle Backspace
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === "Backspace" && !otpDigits[index] && index > 0) {
+      inputRef.current[index - 1]?.focus();
+    }
+  };
+
+  // ✅ Submit OTP
+  const onVerifyOtp = () => {
+    const otpCode = otpDigits.join("");
+
+    if (otpCode.length === OTP_LENGTH) {
+      console.log("✅ OTP Verification Success:", otpCode);
+    } else {
+      console.log("❌ OTP incomplete");
+    }
+  };
+
+  // ✅ Resend OTP
+  const onResendOtp = () => {
+    console.log("Resend OTP pressed");
+  };
 
   return (
-    // <View style={styles.main}>
-    //   <Text style={styles.bodyTxt}>Welcome to Otp Verification Demo!!</Text>
-    // </View>
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={styles.main}
-    >
+      style={styles.main}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <Text style={styles.title}>OTP Verification</Text>
@@ -38,23 +80,27 @@ export default function Index() {
           <Text style={styles.email}>example@gmail.com</Text>
 
           <View style={styles.row}>
-            {digits.map((value, i) => (
+            {otpDigits.map((digit, index) => (
               <TextInput
-                key={i}
-                // ref={(r) => (inputsRef.current[i] = r)}
-                style={styles.box}
-                keyboardType="number-pad"
+                key={index}
+                ref={(ref) => (inputRef.current[index] = ref)}
+                style={styles.otpInput}
+                keyboardType="numeric"
                 maxLength={1}
+                value={digit}
+                onChangeText={(text) => handleOtpChange(text, index)}
               />
             ))}
           </View>
 
-          <TouchableOpacity style={styles.verifyBtn}>
+          <TouchableOpacity style={styles.verifyBtn} onPress={onVerifyOtp}>
             <Text style={styles.verifyText}>Verify</Text>
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
-            Didn’t receive the code? <Text style={styles.resend}>Resend</Text>
+            Didn’t receive the code? <TouchableOpacity onPress={onResendOtp}>
+              <Text style={styles.resend}>Resend OTP</Text>
+            </TouchableOpacity>
           </Text>
         </View>
       </TouchableWithoutFeedback>
@@ -75,7 +121,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: scale(18), fontFamily: "fontReg", marginBottom: verticalScale(15) },
   email: { fontSize: scale(18), fontFamily: "fontBold", marginBottom: verticalScale(18) },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: verticalScale(30) },
-  box: {
+  otpInput: {
     width: scale(60),
     height: verticalScale(55),
     borderWidth: 2,
